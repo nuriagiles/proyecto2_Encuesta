@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulari d'enquesta</title>
+    <style>
+        /* ===== ESTILOS GENERALES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            height: 90vh;
+        }
+
+        /* ===== COLUMNA IZQUIERDA: FORMULARIO ===== */
+        .formulari {
+            flex: 1;
+            padding: 30px;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .formulari h2 {
+            font-size: 18px;
+            margin-bottom: 25px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input[type="number"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        .form-group input[type="number"]:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-guardar {
+            background-color: #2563eb;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: auto;
+            transition: background-color 0.2s;
+        }
+
+        .btn-guardar:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* ===== COLUMNA DRETA: PANEL D'ANALÍTICA ===== */
+        .panel {
+            flex: 1.2;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .panel h2 {
+            font-size: 18px;
+            margin-bottom: 25px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .filter-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .filter-section label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 8px;
+            color: #888;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .filter-section select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Sección de estadísticas rápidas */
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #0284c7;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0c4a6e;
+        }
+
+        /* Sección de gráficos */
+        .charts-section {
+            margin-bottom: 30px;
+        }
+
+        .chart-container {
+            background-color: #f9fafb;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        /* Sección de últimas respostes */
+        .ultimes-respostes {
+            margin-top: 30px;
+        }
+
+        .ultimes-respostes h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .resposta-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #2563eb;
+            background-color: #f0f9ff;
+            font-size: 13px;
+        }
+
+        .resposta-grup {
+            font-weight: 600;
+            color: #2563eb;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .resposta-puntuacio {
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .resposta-comentari {
+            color: #555;
+            font-style: italic;
+            margin-bottom: 4px;
+        }
+
+        .resposta-data {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* Scroll personalizado */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ===== COLUMNA IZQUIERDA: FORMULARIO ===== -->
+        <div class="formulari">
+            <h2>Formulari d'enquesta</h2>
+
+            <form id="formEncuesta">
+                <!-- Campo: Grupo -->
+                <div class="form-group">
+                    <label for="grup">Grup</label>
+                    <select id="grup" name="grup" required>
+                        <option value="">Selecciona un grup...</option>
+                        <option value="DAW1A">DAW1A</option>
+                        <option value="DAW1B">DAW1B</option>
+                        <option value="ASIX1">ASIX1</option>
+                    </select>
+                </div>
+
+                <!-- Campo: Satisfacción Global -->
+                <div class="form-group">
+                    <label for="puntuacio">Satisfacció global (1-5)</label>
+                    <input type="number" id="puntuacio" name="puntuacio" min="1" max="5" required>
+                </div>
+
+                <!-- Campo: Comentario (opcional) -->
+                <div class="form-group">
+                    <label for="comentari">Comentari (opcional)</label>
+                    <textarea id="comentari" name="comentari" placeholder="Qué millionaries de la sessió?"></textarea>
+                </div>
+
+                <!-- Botón: Guardar respuesta -->
+                <button type="submit" class="btn-guardar">Guardar resposta</button>
+            </form>
+        </div>
+
+        <!-- ===== COLUMNA DRETA: PANEL D'ANALÍTICA ===== -->
+        <div class="panel">
+            <h2>Panell d'analítica</h2>
+
+            <!-- Secció de filtres -->
+            <div class="filter-section">
+                <label for="filterGrup">Filtre del panell</label>
+                <select id="filterGrup">
+                    <option value="todos">Todos</option>
+                    <option value="DAW1A">DAW1A</option>
+                    <option value="DAW1B">DAW1B</option>
+                    <option value="ASIX1">ASIX1</option>
+                </select>
+            </div>
+
+            <!-- Estadísticas rápidas -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-label">Respostes</div>
+                    <div class="stat-value" id="totalRespostes">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Mitjana</div>
+                    <div class="stat-value" id="mitjana">0.0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">% Positives</div>
+                    <div class="stat-value" id="percPositives">0%</div>
+                </div>
+            </div>
+
+            <!-- Sección de gráficos -->
+            <div class="charts-section">
+                <!-- Placeholder para gráfico de distribución -->
+                <div class="chart-container">
+                    <div class="chart-title">Distribució de valoracions</div>
+                    <div id="chartDistribucio" style="height: 150px; background: #e0e0e0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999;">
+                        📊 Gràfic de barres (pròximament)
+                    </div>
+                </div>
+
+                <!-- Placeholder para gráficos de pie -->
+                <div class="chart-container">
+                    <div class="chart-title">Gràfics de quesito</div>
+                    <div id="chartQuesito" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                        <div style="height: 150px; background: #e0e0e0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999;">
+                            📈 Quesito 1
+                        </div>
+                        <div style="height: 150px; background: #e0e0e0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999;">
+                            📈 Quesito 2
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Placeholder para gráfico comparativo -->
+                <div class="chart-container">
+                    <div class="chart-title">Comparativa de mitjana per grup</div>
+                    <div id="chartComparativa" style="height: 150px; background: #e0e0e0; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #999;">
+                        📊 Gràfic comparatiu (pròximament)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Últimas respuestas -->
+            <div class="ultimes-respostes">
+                <h3>Últimes respostes</h3>
+                <div id="ultimesRespostes"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== ARRAY DE DATOS DE PRUEBA =====
+        // Este array contiene respuestas de ejemplo para demostrar la funcionalidad
+        // Estructura: {grup, puntuacio, comentari, data}
+        const respostes = [
+            {
+                grup: "DAW1A",
+                puntuacio: 4,
+                comentari: "La part de conclusions és interessant",
+                data: "2026-05-21 14:30"
+            },
+            {
+                grup: "DAW1B",
+                puntuacio: 3,
+                comentari: "Em va costar la part de gràfics",
+                data: "2026-05-21 13:15"
+            },
+            {
+                grup: "ASIX1",
+                puntuacio: 5,
+                comentari: "Excelent sessió, tot molt clar",
+                data: "2026-05-21 12:00"
+            },
+            {
+                grup: "DAW1A",
+                puntuacio: 4,
+                comentari: "Necessitaríem més exercicis pràctics",
+                data: "2026-05-20 16:45"
+            },
+            {
+                grup: "DAW1B",
+                puntuacio: 2,
+                comentari: "Massa ràpid el ritme",
+                data: "2026-05-20 15:30"
+            }
+        ];
+
+        // ===== INICIALIZACIÓN AL CARGAR LA PÁGINA =====
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("✅ Página cargada correctamente");
+            console.log("📊 Datos de prueba cargados:", respostes.length, "respuestas");
+            actualizarPanel();
+            mostrarUltimesRespostes();
+
+            // Actualizar el panel cuando cambie el filtro del grupo
+            document.getElementById("filterGrup").addEventListener("change", function() {
+                actualizarPanel();
+                mostrarUltimesRespostes();
+            });
+        });
+
+        // ===== FUNCIÓN: Obtener respuestas según el filtro seleccionado =====
+        function obtenerRespostesFiltrades() {
+            const filtro = document.getElementById("filterGrup").value;
+            if (filtro === "todos") {
+                return respostes;
+            }
+            return respostes.filter(r => r.grup === filtro);
+        }
+
+        // ===== FUNCIÓN: Actualizar el panel con estadísticas =====
+        function actualizarPanel() {
+            const filtrades = obtenerRespostesFiltrades();
+            const totalRespostes = filtrades.length;
+            document.getElementById("totalRespostes").textContent = totalRespostes;
+
+            if (totalRespostes === 0) {
+                document.getElementById("mitjana").textContent = "-";
+                document.getElementById("percPositives").textContent = "0%";
+            } else {
+                const sumaPuntuacions = filtrades.reduce((sum, r) => sum + r.puntuacio, 0);
+                const mitjana = (sumaPuntuacions / totalRespostes).toFixed(1);
+                document.getElementById("mitjana").textContent = mitjana;
+
+                const positivesCount = filtrades.filter(r => r.puntuacio >= 4).length;
+                const percPositives = Math.round((positivesCount / totalRespostes) * 100);
+                document.getElementById("percPositives").textContent = percPositives + "%";
+            }
+
+            console.log(`📈 Estadísticas calculadas: filtro=${document.getElementById("filterGrup").value}, respuestas=${totalRespostes}`);
+        }
+
+        // ===== FUNCIÓN: Mostrar últimas respuestas =====
+        function mostrarUltimesRespostes() {
+            const container = document.getElementById("ultimesRespostes");
+            container.innerHTML = ""; // Limpiar contenedor
+
+            const filtrades = obtenerRespostesFiltrades();
+            const ultimasRespostes = [...filtrades].reverse().slice(0, 5);
+
+            if (ultimasRespostes.length === 0) {
+                const emptyDiv = document.createElement("div");
+                emptyDiv.className = "resposta-item";
+                emptyDiv.textContent = "No hay respuestas para este filtro.";
+                container.appendChild(emptyDiv);
+            } else {
+                ultimasRespostes.forEach(resposta => {
+                    const div = document.createElement("div");
+                    div.className = "resposta-item";
+                    div.innerHTML = `
+                        <div class="resposta-grup">${resposta.grup}</div>
+                        <div class="resposta-puntuacio">Puntuació: ${resposta.puntuacio}/5</div>
+                        <div class="resposta-comentari">"${resposta.comentari}"</div>
+                        <div class="resposta-data">${resposta.data}</div>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            console.log("✏️ Últimas respuestas mostradas");
+        }
+
+        // ===== MANEJADOR: Envío del formulario =====
+        document.getElementById("formEncuesta").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            // Obtener valores del formulario
+            const grup = document.getElementById("grup").value;
+            const puntuacioInput = document.getElementById("puntuacio").value;
+            const puntuacio = parseInt(puntuacioInput, 10);
+            const comentari = document.getElementById("comentari").value.trim() || "(sin comentario)";
+
+            // Validación del formulario antes de guardar
+            if (!grup) {
+                alert("Por favor, selecciona un grup.");
+                return;
+            }
+
+            if (Number.isNaN(puntuacio) || puntuacio < 1 || puntuacio > 5) {
+                alert("La puntuació ha de ser un nombre entre 1 i 5.");
+                return;
+            }
+
+            // Crear objeto con la nueva respuesta
+            const nuevaResposta = {
+                grup: grup,
+                puntuacio: puntuacio,
+                comentari: comentari,
+                data: new Date().toLocaleString("es-ES")
+            };
+
+            // Agregar a la array de respuestas
+            respostes.push(nuevaResposta);
+            console.log("✅ Nueva respuesta guardada:", nuevaResposta);
+
+            // Actualizar panel y limpiar formulario
+            actualizarPanel();
+            mostrarUltimesRespostes();
+            document.getElementById("formEncuesta").reset();
+
+            // Feedback visual
+            alert("✅ Respuesta guardada correctamente!");
+        });
+    </script>
+</body>
+</html>
