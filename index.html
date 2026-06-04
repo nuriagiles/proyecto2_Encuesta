@@ -458,51 +458,77 @@
     </div>
 
     <script>
-        // ===== ARRAY DE DATOS DE PRUEBA =====
-        // Este array contiene respuestas de ejemplo para demostrar la funcionalidad
-        // Estructura: {grup, puntuacio, comentari, data}
-        const respostes = [
-            {
-                grup: "DAW1A",
-                puntuacio: 4,
-                comentari: "La part de conclusions és interessant",
-                data: "2026-05-21 14:30",
-                ts: "2026-05-21T14:30:00"
-            },
-            {
-                grup: "DAW1B",
-                puntuacio: 3,
-                comentari: "Em va costar la part de gràfics",
-                data: "2026-05-21 13:15",
-                ts: "2026-05-21T13:15:00"
-            },
-            {
-                grup: "ASIX1",
-                puntuacio: 5,
-                comentari: "Excelent sessió, tot molt clar",
-                data: "2026-05-21 12:00",
-                ts: "2026-05-21T12:00:00"
-            },
-            {
-                grup: "DAW1A",
-                puntuacio: 4,
-                comentari: "Necessitaríem més exercicis pràctics",
-                data: "2026-05-20 16:45",
-                ts: "2026-05-20T16:45:00"
-            },
-            {
-                grup: "DAW1B",
-                puntuacio: 2,
-                comentari: "Massa ràpid el ritme",
-                data: "2026-05-20 15:30",
-                ts: "2026-05-20T15:30:00"
+        // ===== CONFIGURACIÓN DE SUPABASE =====
+        const SUPABASE_URL = "https://sfagwhouiltjuoyzebse.supabase.co/rest/v1/";
+        const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNmYWd3aG91aWx0anVveXplYnNlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA1NjQ4NjYsImV4cCI6MjA5NjE0MDg2Nn0.k8iDzVZe6d10OPork1BuqOcQ_58TaM1XxlhVeJFpSRM";
+        const TABLE_NAME = "respostes";
+
+        // Array que contendrá los datos obtenidos de Supabase
+        let respostes = [];
+
+        // ===== FUNCIÓN: Cargar respuestas desde Supabase =====
+        async function carregarRespostes() {
+            try {
+                console.log("📡 Cargando respuestas de Supabase...");
+                const response = await fetch(`${SUPABASE_URL}${TABLE_NAME}?order=created_at.desc`, {
+                    method: "GET",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": `Bearer ${SUPABASE_KEY}`,
+                        "Content-Type": "application/json"
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+
+                respostes = await response.json();
+                console.log("✅ Respuestas cargadas:", respostes.length, "registros");
+                return respostes;
+            } catch (error) {
+                console.error("❌ Error al cargar respuestas:", error);
+                respostes = [];
+                return [];
             }
-        ];
+        }
+
+        // ===== FUNCIÓN: Insertar respuesta en Supabase =====
+        async function insertResposta(nuevaResposta) {
+            try {
+                console.log("📡 Guardando respuesta en Supabase...");
+                const response = await fetch(`${SUPABASE_URL}${TABLE_NAME}`, {
+                    method: "POST",
+                    headers: {
+                        "apikey": SUPABASE_KEY,
+                        "Authorization": `Bearer ${SUPABASE_KEY}`,
+                        "Content-Type": "application/json",
+                        "Prefer": "return=representation"
+                    },
+                    body: JSON.stringify(nuevaResposta)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Error HTTP: ${response.status}`);
+                }
+
+                const resultado = await response.json();
+                console.log("✅ Respuesta guardada en Supabase:", resultado);
+                return resultado;
+            } catch (error) {
+                console.error("❌ Error al guardar respuesta:", error);
+                throw error;
+            }
+        }
 
         // ===== INICIALIZACIÓN AL CARGAR LA PÁGINA =====
-        document.addEventListener('DOMContentLoaded', function() {
+        document.addEventListener('DOMContentLoaded', async function() {
             console.log("✅ Página cargada correctamente");
-            console.log("📊 Datos de prueba cargados:", respostes.length, "respuestas");
+            
+            // Cargar respuestas de Supabase
+            await carregarRespostes();
+            console.log("📊 Respuestas desde Supabase:", respostes.length);
+            
             actualizarPanel();
             mostrarUltimesRespostes();
 
@@ -729,9 +755,9 @@
 
             // Ordenar por timestamp (más recientes primero). Manejar casos sin ts.
             function getTs(r) {
-                if (r.ts) return Date.parse(r.ts);
+                if (r.created_at) return Date.parse(r.created_at);
                 // intentar convertir "YYYY-MM-DD HH:MM" a ISO reemplazando espacio por T
-                const alt = (r.data || '').replace(' ', 'T');
+                const alt = (r.created_at || '').replace(' ', 'T');
                 const parsed = Date.parse(alt);
                 return isNaN(parsed) ? 0 : parsed;
             }
@@ -747,11 +773,12 @@
                 ordenadas.forEach(resposta => {
                     const div = document.createElement("div");
                     div.className = "resposta-item";
+                    const fecha = resposta.created_at ? new Date(resposta.created_at).toLocaleString('es-ES') : '';
                     div.innerHTML = `
                         <div class="resposta-grup">${resposta.grup}</div>
                         <div class="resposta-puntuacio">Puntuació: ${resposta.puntuacio}/5</div>
                         <div class="resposta-comentari">${resposta.comentari ? '"' + resposta.comentari + '"' : ''}</div>
-                        <div class="resposta-data">${resposta.data}</div>
+                        <div class="resposta-data">${fecha}</div>
                     `;
                     container.appendChild(div);
                 });
@@ -761,7 +788,7 @@
         }
 
         // ===== MANEJADOR: Envío del formulario =====
-        document.getElementById("formEncuesta").addEventListener("submit", function(e) {
+        document.getElementById("formEncuesta").addEventListener("submit", async function(e) {
             e.preventDefault();
 
             // Obtener valores del formulario
@@ -785,23 +812,29 @@
             const nuevaResposta = {
                 grup: grup,
                 puntuacio: puntuacio,
-                comentari: comentari,
-                data: new Date().toLocaleString("es-ES"),
-                ts: new Date().toISOString()
+                comentari: comentari
             };
 
-            // Agregar a la array de respuestas
-            respostes.push(nuevaResposta);
-            console.log("✅ Nueva respuesta guardada:", nuevaResposta);
+            try {
+                // Guardar en Supabase
+                await insertResposta(nuevaResposta);
 
-            // Actualizar panel y limpiar formulario
-            actualizarPanel();
-            mostrarUltimesRespostes();
-            document.getElementById("formEncuesta").reset();
+                // Recargar respuestas desde Supabase
+                await carregarRespostes();
 
-            // Feedback visual
-            alert("✅ Respuesta guardada correctamente!");
+                // Actualizar panel y limpiar formulario
+                actualizarPanel();
+                mostrarUltimesRespostes();
+                document.getElementById("formEncuesta").reset();
+
+                // Feedback visual
+                alert("✅ Respuesta guardada correctamente!");
+            } catch (error) {
+                alert("❌ Error al guardar la respuesta. Intenta de nuevo.");
+                console.error("Error en el formulario:", error);
+            }
         });
     </script>
+    
 </body>
 </html>

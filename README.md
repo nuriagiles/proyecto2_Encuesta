@@ -13,6 +13,6 @@ L’aplicació està desplegada a Vercel i es pot consultar a la següent URL:
 
 **https://proyecto2-encuesta.vercel.app**
 
-Actualment les dades de l’enquesta es gestionen de manera local al navegador. La integració amb **Supabase** es realitzarà a la següent fase del projecte (IA5).
 
-S’ha comprovat que no hi ha claus API ni informació sensible al repositori. A més, el fitxer **.gitignore** inclou **.env** per evitar la publicació accidental de variables d’entorn.
+- Repositori GitHub: [posa aquí el teu enllaç]
+- URL de Vercel: [posa aquí el teu enllaç]
