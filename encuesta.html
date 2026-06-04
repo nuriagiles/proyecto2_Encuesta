@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulari d'enquesta</title>
+    <style>
+        /* ===== ESTILOS GENERALES ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            padding: 20px;
+        }
+
+        .container {
+            display: flex;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            height: 90vh;
+        }
+
+        /* ===== COLUMNA IZQUIERDA: FORMULARIO ===== */
+        .formulari {
+            flex: 1;
+            padding: 30px;
+            border-right: 1px solid #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .formulari h2 {
+            font-size: 18px;
+            margin-bottom: 25px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input[type="number"],
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+            font-family: inherit;
+        }
+
+        .form-group input[type="number"]:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        .btn-guardar {
+            background-color: #2563eb;
+            color: white;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: auto;
+            transition: background-color 0.2s;
+        }
+
+        .btn-guardar:hover {
+            background-color: #1d4ed8;
+        }
+
+        /* ===== COLUMNA DRETA: PANEL D'ANALÍTICA ===== */
+        .panel {
+            flex: 1.2;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+
+        .panel h2 {
+            font-size: 18px;
+            margin-bottom: 25px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .filter-section {
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .filter-section label {
+            display: block;
+            font-size: 12px;
+            margin-bottom: 8px;
+            color: #888;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .filter-section select {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        /* Sección de estadísticas rápidas */
+        .stats-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            padding: 15px;
+            border-radius: 6px;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #0284c7;
+            text-transform: uppercase;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #0c4a6e;
+        }
+
+        /* Sección de gráficos */
+        .charts-section {
+            margin-bottom: 30px;
+        }
+
+        /* ===== BARRAS DE PUNTUACIÓN 1-5 ===== */
+        .bars-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .bar-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bar-label {
+            width: 28px;
+            text-align: right;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .bar {
+            flex: 1;
+            height: 16px;
+            background: #e6eef9;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #60a5fa 0%, #2563eb 100%);
+            border-radius: 8px 0 0 8px;
+            transition: width 300ms ease;
+        }
+
+        .bar-count {
+            width: 48px;
+            text-align: left;
+            color: #0f172a;
+            font-weight: 600;
+        }
+
+        /* Estilos visuales específicos para la comparativa de medias por grupo */
+        #chartComparativaBars .bar-row {
+            min-height: 44px;
+            align-items: center;
+            gap: 14px;
+        }
+
+        #chartComparativaBars .bar-label {
+            width: 90px;
+            text-align: left;
+            color: #334155;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        #chartComparativaBars .bar {
+            flex: 1;
+            height: 18px;
+            border-radius: 999px;
+            background: #e5e7eb;
+            overflow: hidden;
+        }
+
+        #chartComparativaBars .bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #2563eb 0%, #60a5fa 100%);
+            border-radius: 999px 0 0 999px;
+            box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
+            transition: width 300ms ease;
+        }
+
+        #chartComparativaBars .bar-count {
+            width: 70px;
+            text-align: right;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .chart-container {
+            background-color: #f9fafb;
+            padding: 20px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+        }
+
+        /* ===== ESTILOS PARA GRÁFICOS DE QUESITO ===== */
+        .pie-wrap { display:flex; align-items:center; gap:12px }
+        .pie {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            position: relative;
+            display: inline-block;
+        }
+        .pie-donut { mask: radial-gradient(farthest-side, transparent calc(50% - 18px), black calc(50% - 18px)); -webkit-mask: radial-gradient(farthest-side, transparent calc(50% - 18px), black calc(50% - 18px)); }
+        .pie-center { position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); text-align:center; font-weight:700; color:#0f172a }
+        .pie-legend { display:flex; flex-direction:column; gap:6px; font-size:13px; color:#334155 }
+        .legend-item { display:flex; gap:8px; align-items:center }
+        .legend-swatch { width:12px; height:12px; border-radius:2px }
+
+        .chart-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        /* Sección de últimas respostes */
+        .ultimes-respostes {
+            margin-top: 30px;
+        }
+
+        .ultimes-respostes h3 {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .resposta-item {
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #2563eb;
+            background-color: #f0f9ff;
+            font-size: 13px;
+        }
+
+        .resposta-grup {
+            font-weight: 600;
+            color: #2563eb;
+            margin-bottom: 4px;
+            text-transform: uppercase;
+        }
+
+        .resposta-puntuacio {
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .resposta-comentari {
+            color: #555;
+            font-style: italic;
+            margin-bottom: 4px;
+        }
+
+        .resposta-data {
+            font-size: 12px;
+            color: #999;
+        }
+
+        /* Scroll personalizado */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #ccc;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #999;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ===== COLUMNA IZQUIERDA: FORMULARIO ===== -->
+        <div class="formulari">
+            <h2>Formulari d'enquesta</h2>
+
+            <form id="formEncuesta">
+                <!-- Campo: Grupo -->
+                <div class="form-group">
+                    <label for="grup">Grup</label>
+                    <select id="grup" name="grup" required>
+                        <option value="">Selecciona un grup...</option>
+                        <option value="DAW1A">DAW1A</option>
+                        <option value="DAW1B">DAW1B</option>
+                        <option value="ASIX1">ASIX1</option>
+                    </select>
+                </div>
+
+                <!-- Campo: Satisfacción Global -->
+                <div class="form-group">
+                    <label for="puntuacio">Satisfacció global (1-5)</label>
+                    <input type="number" id="puntuacio" name="puntuacio" min="1" max="5" required>
+                </div>
+
+                <!-- Campo: Comentario (opcional) -->
+                <div class="form-group">
+                    <label for="comentari">Comentari (opcional)</label>
+                    <textarea id="comentari" name="comentari" placeholder="Qué millionaries de la sessió?"></textarea>
+                </div>
+
+                <!-- Botón: Guardar respuesta -->
+                <button type="submit" class="btn-guardar">Guardar resposta</button>
+            </form>
+        </div>
+
+        <!-- ===== COLUMNA DRETA: PANEL D'ANALÍTICA ===== -->
+        <div class="panel">
+            <h2>Panell d'analítica</h2>
+
+            <!-- Secció de filtres -->
+            <div class="filter-section">
+                <label for="filterGrup">Filtre del panell</label>
+                <select id="filterGrup">
+                    <option value="todos">Todos</option>
+                    <option value="DAW1A">DAW1A</option>
+                    <option value="DAW1B">DAW1B</option>
+                    <option value="ASIX1">ASIX1</option>
+                </select>
+            </div>
+
+            <!-- Estadísticas rápidas -->
+            <div class="stats-row">
+                <div class="stat-card">
+                    <div class="stat-label">Respostes</div>
+                    <div class="stat-value" id="totalRespostes">0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">Mitjana</div>
+                    <div class="stat-value" id="mitjana">0.0</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-label">% Positives</div>
+                    <div class="stat-value" id="percPositives">0%</div>
+                </div>
+            </div>
+
+            <!-- Sección de gráficos -->
+            <div class="charts-section">
+                <!-- Placeholder para gráfico de distribución -->
+                <div class="chart-container">
+                    <div class="chart-title">Distribució de valoracions</div>
+                    <div id="chartDistribucio" style="display: flex; flex-direction: column; gap: 15px;">
+                        <div id="barsContainer" class="bars-container" aria-live="polite">
+                            <!-- Las filas se generan dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Placeholder para gráficos de pie -->
+                <div class="chart-container">
+                    <div class="chart-title">Gràfics de quesito</div>
+                        <div id="chartQuesito" style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+                            <div id="quesitoDistribucion" style="height: 150px; display:flex; align-items:center; justify-content:center; background: #fff; border-radius:4px; padding:8px;">
+                            </div>
+                            <div id="quesitoPositivitat" style="height: 150px; display:flex; align-items:center; justify-content:center; background: #fff; border-radius:4px; padding:8px;">
+                            </div>
+                        </div>
+                </div>
+
+                <!-- Placeholder para gráfico comparativo -->
+                <div class="chart-container">
+                    <div class="chart-title">Comparativa de mitjana per grup</div>
+                    <div id="chartComparativa" style="display: flex; flex-direction: column; gap: 12px;">
+                        <div id="chartComparativaBars" class="bars-container" aria-live="polite">
+                            <!-- Barra de media por grupo se genera dinámicamente -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Últimas respuestas -->
+            <div class="ultimes-respostes">
+                <h3>Últimes respostes</h3>
+                <div id="ultimesRespostes"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== ARRAY DE DATOS DE PRUEBA =====
+        // Este array contiene respuestas de ejemplo para demostrar la funcionalidad
+        // Estructura: {grup, puntuacio, comentari, data}
+        const respostes = [
+            {
+                grup: "DAW1A",
+                puntuacio: 4,
+                comentari: "La part de conclusions és interessant",
+                data: "2026-05-21 14:30",
+                ts: "2026-05-21T14:30:00"
+            },
+            {
+                grup: "DAW1B",
+                puntuacio: 3,
+                comentari: "Em va costar la part de gràfics",
+                data: "2026-05-21 13:15",
+                ts: "2026-05-21T13:15:00"
+            },
+            {
+                grup: "ASIX1",
+                puntuacio: 5,
+                comentari: "Excelent sessió, tot molt clar",
+                data: "2026-05-21 12:00",
+                ts: "2026-05-21T12:00:00"
+            },
+            {
+                grup: "DAW1A",
+                puntuacio: 4,
+                comentari: "Necessitaríem més exercicis pràctics",
+                data: "2026-05-20 16:45",
+                ts: "2026-05-20T16:45:00"
+            },
+            {
+                grup: "DAW1B",
+                puntuacio: 2,
+                comentari: "Massa ràpid el ritme",
+                data: "2026-05-20 15:30",
+                ts: "2026-05-20T15:30:00"
+            }
+        ];
+
+        // ===== INICIALIZACIÓN AL CARGAR LA PÁGINA =====
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log("✅ Página cargada correctamente");
+            console.log("📊 Datos de prueba cargados:", respostes.length, "respuestas");
+            actualizarPanel();
+            mostrarUltimesRespostes();
+
+            // Actualizar el panel cuando cambie el filtro del grupo
+            document.getElementById("filterGrup").addEventListener("change", function() {
+                actualizarPanel();
+                mostrarUltimesRespostes();
+            });
+        });
+
+        // ===== FUNCIÓN: Obtener respuestas según el filtro seleccionado =====
+        function obtenerRespostesFiltrades() {
+            const filtro = document.getElementById("filterGrup").value;
+            if (filtro === "todos") {
+                return respostes;
+            }
+            return respostes.filter(r => r.grup === filtro);
+        }
+
+        // ===== FUNCIÓN: Renderizar barras 1-5 según el filtro activo =====
+        function renderBars() {
+            const filtrades = obtenerRespostesFiltrades();
+            const total = filtrades.length;
+            const container = document.getElementById('barsContainer');
+            container.innerHTML = '';
+
+            for (let puntuacio = 1; puntuacio <= 5; puntuacio++) {
+                const count = filtrades.filter(r => r.puntuacio === puntuacio).length;
+                const percent = total === 0 ? 0 : Math.round((count / total) * 100);
+
+                const row = document.createElement('div');
+                row.className = 'bar-row';
+
+                const label = document.createElement('div');
+                label.className = 'bar-label';
+                label.textContent = puntuacio;
+
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+
+                const fill = document.createElement('div');
+                fill.className = 'bar-fill';
+                // Ancho según porcentaje relativo al total
+                fill.style.width = percent + '%';
+                fill.setAttribute('aria-hidden', 'true');
+
+                const countDiv = document.createElement('div');
+                countDiv.className = 'bar-count';
+                countDiv.textContent = count > 0 ? `${count} (${percent}%)` : `0 (0%)`;
+
+                bar.appendChild(fill);
+                row.appendChild(label);
+                row.appendChild(bar);
+                row.appendChild(countDiv);
+
+                container.appendChild(row);
+            }
+        }
+
+        // ===== FUNCIÓN: Renderizar quesitos =====
+        function renderQuesitos() {
+            const filtrades = obtenerRespostesFiltrades();
+            const total = filtrades.length;
+
+            // Distribución por puntuación 1-5
+            const distribContainer = document.getElementById('quesitoDistribucion');
+            distribContainer.innerHTML = '';
+
+            const counts = [];
+            for (let i = 1; i <= 5; i++) counts.push(filtrades.filter(r => r.puntuacio === i).length);
+
+            const colors = ['#ef4444','#f59e0b','#f59e0b','#10b981','#059669']; // tonos para 1..5
+            const totalCounts = counts.reduce((s,c) => s+c, 0);
+
+            if (totalCounts === 0) {
+                const empty = document.createElement('div');
+                empty.textContent = 'No hay datos';
+                distribContainer.appendChild(empty);
+            } else {
+                // construir conic-gradient
+                let start = 0;
+                const slices = counts.map(c => Math.round((c/totalCounts)*100));
+                const gradients = [];
+                for (let i=0;i<slices.length;i++){
+                    const end = start + slices[i];
+                    if (slices[i] > 0) gradients.push(`${colors[i]} ${start}% ${end}%`);
+                    start = end;
+                }
+                const gradStr = gradients.join(', ');
+
+                const pie = document.createElement('div');
+                pie.className = 'pie pie-donut';
+                pie.style.background = `conic-gradient(${gradStr})`;
+
+                const center = document.createElement('div');
+                center.className = 'pie-center';
+                center.innerHTML = `<div style="font-size:16px">${totalCounts}</div><div style="font-size:11px;color:#6b7280">Total</div>`;
+                pie.appendChild(center);
+
+                const legend = document.createElement('div');
+                legend.className = 'pie-legend';
+                for (let i=0;i<counts.length;i++){
+                    const pct = totalCounts === 0 ? 0 : ((counts[i]/totalCounts)*100).toFixed(1);
+                    const item = document.createElement('div');
+                    item.className = 'legend-item';
+                    item.innerHTML = `<div class="legend-swatch" style="background:${colors[i]}"></div><div>${i+1}/5: ${counts[i]} (${pct}%)</div>`;
+                    legend.appendChild(item);
+                }
+
+                const wrap = document.createElement('div');
+                wrap.className = 'pie-wrap';
+                wrap.appendChild(pie);
+                wrap.appendChild(legend);
+                distribContainer.appendChild(wrap);
+            }
+
+            // Positives (4-5) vs No positives (1-3)
+            const posContainer = document.getElementById('quesitoPositivitat');
+            posContainer.innerHTML = '';
+            const positives = filtrades.filter(r => r.puntuacio >= 4).length;
+            const negatives = totalCounts - positives;
+            if (totalCounts === 0) {
+                posContainer.textContent = 'No hay datos';
+            } else {
+                const posPct = Math.round((positives/totalCounts)*100);
+                const grad = `conic-gradient(#10b981 0 ${posPct}%, #f97316 ${posPct}% 100%)`;
+                const pie2 = document.createElement('div');
+                pie2.className = 'pie pie-donut';
+                pie2.style.background = grad;
+                const center2 = document.createElement('div');
+                center2.className = 'pie-center';
+                center2.innerHTML = `<div style="font-size:16px">${posPct}%</div><div style="font-size:11px;color:#6b7280">Positives</div>`;
+                pie2.appendChild(center2);
+
+                const legend2 = document.createElement('div');
+                legend2.className = 'pie-legend';
+                legend2.innerHTML = `<div class="legend-item"><div class="legend-swatch" style="background:#10b981"></div><div>Positives: ${positives}</div></div><div class="legend-item"><div class="legend-swatch" style="background:#f97316"></div><div>No positives: ${negatives}</div></div>`;
+
+                const wrap2 = document.createElement('div');
+                wrap2.className = 'pie-wrap';
+                wrap2.appendChild(pie2);
+                wrap2.appendChild(legend2);
+                posContainer.appendChild(wrap2);
+            }
+        }
+
+        // ===== FUNCIÓN: Renderizar comparativa de mitjana per grup =====
+        function renderComparativa() {
+            const grupos = ['DAW1A', 'DAW1B', 'ASIX1'];
+            const filtro = document.getElementById('filterGrup').value;
+            const container = document.getElementById('chartComparativaBars');
+            container.innerHTML = '';
+
+            grupos.forEach(grup => {
+                const respuestasGrupo = respostes.filter(r => r.grup === grup);
+                const count = respuestasGrupo.length;
+                const average = count === 0 ? 0 : respuestasGrupo.reduce((sum, r) => sum + r.puntuacio, 0) / count;
+                const widthPct = Math.round((average / 5) * 100);
+                const selectedLabel = filtro !== 'todos' && filtro === grup ? ' (seleccionat)' : '';
+
+                const row = document.createElement('div');
+                row.className = 'bar-row';
+
+                const label = document.createElement('div');
+                label.className = 'bar-label';
+                label.textContent = `${grup}${selectedLabel}`;
+
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+
+                const fill = document.createElement('div');
+                fill.className = 'bar-fill';
+                fill.style.width = widthPct + '%';
+                fill.style.background = '#2563eb';
+                fill.setAttribute('aria-hidden', 'true');
+
+                const countDiv = document.createElement('div');
+                countDiv.className = 'bar-count';
+                countDiv.textContent = count === 0 ? '0 (0.0)' : `${average.toFixed(1)} / 5`;
+
+                bar.appendChild(fill);
+                row.appendChild(label);
+                row.appendChild(bar);
+                row.appendChild(countDiv);
+
+                container.appendChild(row);
+            });
+        }
+
+        // ===== FUNCIÓN: Actualizar el panel con estadísticas =====
+        function actualizarPanel() {
+            const filtrades = obtenerRespostesFiltrades();
+            const totalRespostes = filtrades.length;
+            document.getElementById("totalRespostes").textContent = totalRespostes;
+
+            if (totalRespostes === 0) {
+                document.getElementById("mitjana").textContent = "-";
+                document.getElementById("percPositives").textContent = "0%";
+            } else {
+                const sumaPuntuacions = filtrades.reduce((sum, r) => sum + r.puntuacio, 0);
+                const mitjana = (sumaPuntuacions / totalRespostes).toFixed(1);
+                document.getElementById("mitjana").textContent = mitjana;
+
+                const positivesCount = filtrades.filter(r => r.puntuacio >= 4).length;
+                const percPositives = Math.round((positivesCount / totalRespostes) * 100);
+                document.getElementById("percPositives").textContent = percPositives + "%";
+            }
+
+            console.log(`📈 Estadísticas calculadas: filtro=${document.getElementById("filterGrup").value}, respuestas=${totalRespostes}`);
+
+            // Actualizar las barras después de recalcular las estadísticas
+            renderBars();
+            // Actualizar los quesitos (distribución y positives)
+            if (typeof renderQuesitos === 'function') renderQuesitos();
+            // Actualizar la comparativa de medias por grupo
+            if (typeof renderComparativa === 'function') renderComparativa();
+        }
+
+        // ===== FUNCIÓN: Mostrar últimas respuestas =====
+        function mostrarUltimesRespostes() {
+            const container = document.getElementById("ultimesRespostes");
+            container.innerHTML = ""; // Limpiar contenedor
+            const filtrades = obtenerRespostesFiltrades();
+
+            // Ordenar por timestamp (más recientes primero). Manejar casos sin ts.
+            function getTs(r) {
+                if (r.ts) return Date.parse(r.ts);
+                // intentar convertir "YYYY-MM-DD HH:MM" a ISO reemplazando espacio por T
+                const alt = (r.data || '').replace(' ', 'T');
+                const parsed = Date.parse(alt);
+                return isNaN(parsed) ? 0 : parsed;
+            }
+
+            const ordenadas = [...filtrades].sort((a, b) => getTs(b) - getTs(a));
+
+            if (ordenadas.length === 0) {
+                const emptyDiv = document.createElement("div");
+                emptyDiv.className = "resposta-item";
+                emptyDiv.textContent = "No hay respuestas para este filtro.";
+                container.appendChild(emptyDiv);
+            } else {
+                ordenadas.forEach(resposta => {
+                    const div = document.createElement("div");
+                    div.className = "resposta-item";
+                    div.innerHTML = `
+                        <div class="resposta-grup">${resposta.grup}</div>
+                        <div class="resposta-puntuacio">Puntuació: ${resposta.puntuacio}/5</div>
+                        <div class="resposta-comentari">${resposta.comentari ? '"' + resposta.comentari + '"' : ''}</div>
+                        <div class="resposta-data">${resposta.data}</div>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            console.log("✏️ Últimas respuestas mostradas");
+        }
+
+        // ===== MANEJADOR: Envío del formulario =====
+        document.getElementById("formEncuesta").addEventListener("submit", function(e) {
+            e.preventDefault();
+
+            // Obtener valores del formulario
+            const grup = document.getElementById("grup").value;
+            const puntuacioRaw = document.getElementById("puntuacio").value;
+            const puntuacio = Number(puntuacioRaw);
+            const comentari = document.getElementById("comentari").value.trim() || "(sin comentario)";
+
+            // Validación del formulario antes de guardar
+            if (!grup) {
+                alert("Por favor, selecciona un grup.");
+                return;
+            }
+
+            if (!Number.isInteger(puntuacio) || puntuacio < 1 || puntuacio > 5) {
+                alert("La puntuació ha de ser un nombre enter entre 1 i 5.");
+                return;
+            }
+
+            // Crear objeto con la nueva respuesta
+            const nuevaResposta = {
+                grup: grup,
+                puntuacio: puntuacio,
+                comentari: comentari,
+                data: new Date().toLocaleString("es-ES"),
+                ts: new Date().toISOString()
+            };
+
+            // Agregar a la array de respuestas
+            respostes.push(nuevaResposta);
+            console.log("✅ Nueva respuesta guardada:", nuevaResposta);
+
+            // Actualizar panel y limpiar formulario
+            actualizarPanel();
+            mostrarUltimesRespostes();
+            document.getElementById("formEncuesta").reset();
+
+            // Feedback visual
+            alert("✅ Respuesta guardada correctamente!");
+        });
+    </script>
+</body>
+</html>
