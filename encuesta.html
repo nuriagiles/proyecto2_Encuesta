@@ -173,6 +173,50 @@
             margin-bottom: 30px;
         }
 
+        /* ===== BARRAS DE PUNTUACIÓN 1-5 ===== */
+        .bars-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .bar-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .bar-label {
+            width: 28px;
+            text-align: right;
+            font-weight: 600;
+            color: #334155;
+        }
+
+        .bar {
+            flex: 1;
+            height: 16px;
+            background: #e6eef9;
+            border-radius: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .bar-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #60a5fa 0%, #2563eb 100%);
+            border-radius: 8px 0 0 8px;
+            transition: width 300ms ease;
+        }
+
+        .bar-count {
+            width: 48px;
+            text-align: left;
+            color: #0f172a;
+            font-weight: 600;
+        }
+
         .chart-container {
             background-color: #f9fafb;
             padding: 20px;
@@ -346,6 +390,14 @@
                         📊 Gràfic comparatiu (pròximament)
                     </div>
                 </div>
+
+                <!-- BARRAS DE PUNTUACIÓN 1-5 -->
+                <div class="chart-container">
+                    <div class="chart-title">Distribució per puntuació (1-5)</div>
+                    <div id="barsContainer" class="bars-container" aria-live="polite">
+                        <!-- Las filas se generan dinámicamente -->
+                    </div>
+                </div>
             </div>
 
             <!-- Últimas respuestas -->
@@ -416,6 +468,46 @@
             return respostes.filter(r => r.grup === filtro);
         }
 
+        // ===== FUNCIÓN: Renderizar barras 1-5 según el filtro activo =====
+        function renderBars() {
+            const filtrades = obtenerRespostesFiltrades();
+            const total = filtrades.length;
+            const container = document.getElementById('barsContainer');
+            container.innerHTML = '';
+
+            for (let puntuacio = 1; puntuacio <= 5; puntuacio++) {
+                const count = filtrades.filter(r => r.puntuacio === puntuacio).length;
+                const percent = total === 0 ? 0 : Math.round((count / total) * 100);
+
+                const row = document.createElement('div');
+                row.className = 'bar-row';
+
+                const label = document.createElement('div');
+                label.className = 'bar-label';
+                label.textContent = puntuacio;
+
+                const bar = document.createElement('div');
+                bar.className = 'bar';
+
+                const fill = document.createElement('div');
+                fill.className = 'bar-fill';
+                // Ancho según porcentaje relativo al total
+                fill.style.width = percent + '%';
+                fill.setAttribute('aria-hidden', 'true');
+
+                const countDiv = document.createElement('div');
+                countDiv.className = 'bar-count';
+                countDiv.textContent = count > 0 ? `${count} (${percent}%)` : `0 (0%)`;
+
+                bar.appendChild(fill);
+                row.appendChild(label);
+                row.appendChild(bar);
+                row.appendChild(countDiv);
+
+                container.appendChild(row);
+            }
+        }
+
         // ===== FUNCIÓN: Actualizar el panel con estadísticas =====
         function actualizarPanel() {
             const filtrades = obtenerRespostesFiltrades();
@@ -436,6 +528,9 @@
             }
 
             console.log(`📈 Estadísticas calculadas: filtro=${document.getElementById("filterGrup").value}, respuestas=${totalRespostes}`);
+
+            // Actualizar las barras después de recalcular las estadísticas
+            renderBars();
         }
 
         // ===== FUNCIÓN: Mostrar últimas respuestas =====
